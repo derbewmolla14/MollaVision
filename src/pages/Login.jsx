@@ -1,16 +1,29 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { FiMail, FiLock } from 'react-icons/fi';
 import Button from '../components/common/Button';
+import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
+  const { login } = useAuth();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // TODO: Implement login functionality
-    console.log('Login:', { email, password });
+    setError('');
+    setIsSubmitting(true);
+    try {
+      await login({ email, password });
+      navigate('/dashboard');
+    } catch (requestError) {
+      setError(requestError.response?.data?.message || 'Unable to sign in. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -21,6 +34,8 @@ const Login = () => {
           <h2 className="text-2xl font-bold text-gray-900">Sign In</h2>
           <p className="text-gray-600 mt-2">Welcome back! Login to your account</p>
         </div>
+
+        {error && <p className="mb-5 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Email Input */}
@@ -74,8 +89,8 @@ const Login = () => {
           </div>
 
           {/* Login Button */}
-          <Button variant="primary" className="w-full">
-            Sign In
+          <Button variant="primary" type="submit" disabled={isSubmitting} className="w-full">
+            {isSubmitting ? 'Signing in...' : 'Sign In'}
           </Button>
         </form>
 

@@ -15,9 +15,14 @@ const CourseCard = ({ course }) => {
     <Card className="group flex h-full flex-col p-6 transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(37,99,235,0.08)]">
       <div className="mb-5 flex items-start justify-between gap-3">
         <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-3xl shadow-sm">{course.icon}</div>
-        <Badge variant={difficultyColor} className="text-[10px] font-semibold uppercase tracking-wide">
-          {course.level}
-        </Badge>
+        <div className="flex flex-col items-end gap-2">
+          <Badge variant={course.isPremium ? 'yellow' : 'green'} className="text-[10px] font-semibold uppercase tracking-wide">
+            {course.isPremium ? 'Premium' : 'Free'}
+          </Badge>
+          <Badge variant={difficultyColor} className="text-[10px] font-semibold uppercase tracking-wide">
+            {course.level}
+          </Badge>
+        </div>
       </div>
 
       <h3 className="mb-2 text-xl font-bold text-slate-900">{course.title}</h3>

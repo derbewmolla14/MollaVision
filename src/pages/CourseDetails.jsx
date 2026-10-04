@@ -1,13 +1,17 @@
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useLocation, useNavigate } from 'react-router-dom';
 import { FiArrowLeft, FiPlay } from 'react-icons/fi';
 import Button from '../components/common/Button';
 import Badge from '../components/common/Badge';
 import useProgress from '../hooks/useProgress';
 import { getCourseById } from '../data/courses';
 import { getLessonsByOrder } from '../data/lessons';
+import { useAuth } from '../context/AuthContext';
 
 const CourseDetails = () => {
   const { courseId } = useParams();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const course = getCourseById(courseId);
   const { enrollCourse, isEnrolled, getLastLesson, completedCount } = useProgress(courseId);
   const lessons = getLessonsByOrder(courseId);
@@ -148,6 +152,12 @@ const CourseDetails = () => {
                     <Link
                       key={lesson.id}
                       to={`/courses/${courseId}/${lesson.id}`}
+                    onClick={(event) => {
+                      if (!user) {
+                        event.preventDefault();
+                        navigate('/login', { state: { from: location.pathname } });
+                      }
+                    }}
                       className="flex items-center gap-4 p-4 border border-gray-200 rounded-lg hover:bg-blue-50 transition-colors group"
                     >
                       <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
@@ -180,6 +190,12 @@ const CourseDetails = () => {
                   <Link
                     to={`/courses/${courseId}/${startLesson}`}
                     className="w-full"
+                    onClick={(event) => {
+                      if (!user) {
+                        event.preventDefault();
+                        navigate('/login', { state: { from: location.pathname } });
+                      }
+                    }}
                   >
                     <Button variant="primary" className="w-full mb-4">
                       {getLastLesson(courseId) ? '▶ Continue Learning' : '▶ Start Learning'}
@@ -197,6 +213,10 @@ const CourseDetails = () => {
                     variant="primary"
                     className="w-full mb-4"
                     onClick={() => {
+                      if (!user) {
+                        navigate('/login', { state: { from: location.pathname } });
+                        return;
+                      }
                       enrollCourse(courseId);
                     }}
                   >

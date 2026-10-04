@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { FiArrowRight, FiBookOpen } from 'react-icons/fi';
 import { useAuth } from '../context/AuthContext';
 import { courses } from '../data/courses';
@@ -6,6 +6,7 @@ import useProgress from '../hooks/useProgress';
 
 const Dashboard = () => {
   const { user } = useAuth();
+  const location = useLocation();
   const { enrolledCourses } = useProgress();
   const myCourses = courses.filter((course) => enrolledCourses.includes(course.id));
 
@@ -16,6 +17,7 @@ const Dashboard = () => {
           <p className="text-sm font-semibold uppercase tracking-wide text-blue-600">Your learning space</p>
           <h1 className="text-4xl font-bold text-gray-900">Welcome back, {user?.name}</h1>
           <p className="mt-2 text-gray-600">Keep your momentum going with your enrolled courses.</p>
+          {location.state?.message && <p className="mt-4 rounded-lg bg-green-50 px-4 py-3 text-sm font-medium text-green-700">{location.state.message}</p>}
         </div>
 
         <section>

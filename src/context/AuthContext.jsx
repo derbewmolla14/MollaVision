@@ -8,7 +8,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    authAPI.me()
+    authAPI.getMe()
       .then(({ data }) => setUser(data.user))
       .catch(() => setUser(null))
       .finally(() => setLoading(false));
@@ -27,12 +27,15 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = async () => {
-    await authAPI.logout();
-    setUser(null);
+    try {
+      await authAPI.logout();
+    } finally {
+      setUser(null);
+    }
   };
 
   const refreshUser = async () => {
-    const { data } = await authAPI.me();
+    const { data } = await authAPI.getMe();
     setUser(data.user);
     return data.user;
   };

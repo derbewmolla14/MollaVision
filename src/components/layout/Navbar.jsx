@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { FiMenu, FiX, FiSearch } from 'react-icons/fi';
 import Button from '../common/Button';
+import { useAuth } from '../../context/AuthContext';
 
 const navItems = [
   { to: '/tutorials', label: 'Tutorials' },
@@ -12,6 +13,7 @@ const navItems = [
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user, logout } = useAuth();
 
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/90 backdrop-blur-sm">
@@ -49,12 +51,19 @@ const Navbar = () => {
               />
             </label>
 
-            <Link to="/login">
-              <Button variant="secondary" className="px-4 py-2.5 text-sm">Login</Button>
-            </Link>
-            <Link to="/courses">
-              <Button variant="primary" className="px-4 py-2.5 text-sm">Sign Up</Button>
-            </Link>
+            {!user ? (
+              <>
+              <Link to="/login"><Button variant="secondary" className="px-4 py-2.5 text-sm">Login</Button></Link>
+              <Link to="/register"><Button variant="primary" className="px-4 py-2.5 text-sm">Sign Up</Button></Link>
+              </>
+            ) : (
+              <>
+                <span className="text-sm font-medium text-slate-600">{user.name}</span>
+                <Link to="/dashboard" className="text-sm font-medium text-slate-600 hover:text-blue-600">Dashboard</Link>
+                {user.role === 'admin' && <Link to="/admin" className="text-sm font-medium text-slate-600 hover:text-blue-600">Admin Dashboard</Link>}
+                <Button variant="secondary" className="px-4 py-2.5 text-sm" onClick={logout}>Logout</Button>
+              </>
+            )}
           </div>
 
           <div className="flex items-center gap-2 md:hidden">
@@ -89,14 +98,18 @@ const Navbar = () => {
                 </NavLink>
               ))}
 
-              <div className="mt-2 space-y-2 border-t border-slate-200 pt-3">
-                <Link to="/login" onClick={() => setIsMenuOpen(false)} className="block rounded-xl px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">
-                  Login
-                </Link>
-                <Link to="/courses" onClick={() => setIsMenuOpen(false)}>
-                  <Button variant="primary" className="w-full justify-center">Sign Up</Button>
-                </Link>
-              </div>
+              {!user ? (
+                <>
+                <Link to="/login" onClick={() => setIsMenuOpen(false)} className="block rounded-xl px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">Login</Link>
+                <Link to="/register" onClick={() => setIsMenuOpen(false)}><Button variant="primary" className="w-full justify-center">Sign Up</Button></Link>
+                </>
+              ) : (
+                <>
+                <Link to="/dashboard" onClick={() => setIsMenuOpen(false)} className="block rounded-xl px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">Dashboard</Link>
+                {user.role === 'admin' && <Link to="/admin" onClick={() => setIsMenuOpen(false)} className="block rounded-xl px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">Admin Dashboard</Link>}
+                <button onClick={logout} className="rounded-xl px-3 py-2 text-left text-sm font-medium text-slate-700 hover:bg-slate-100">Logout</button>
+                </>
+              )}
             </div>
           </div>
         )}

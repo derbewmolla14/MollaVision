@@ -17,19 +17,22 @@ const cookieOptions = () => ({
 
 router.post('/register', authLimiter, async (req, res, next) => {
   try {
-    const { name, email, password } = req.body;
-    if (!name?.trim() || !email?.trim() || !password || password.length < 8) {
-      return res.status(400).json({ message: 'Name, email, and a password of at least 8 characters are required' });
+    const { name, email, password, confirmPassword } = req.body;
+    if (!name?.trim() || !email?.trim() || !password || password.length < 6 || password !== confirmPassword) {
+      return res.status(400).json({ message: 'Name, valid email, matching passwords, and a password of at least 6 characters are required' });
     }
 
     const normalizedEmail = email.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      return res.status(400).json({ message: 'Please provide a valid email address' });
+    }
     if (await User.exists({ email: normalizedEmail })) {
       return res.status(409).json({ message: 'An account with this email already exists' });
     }
 
     const passwordHash = await bcrypt.hash(password, 12);
     const user = await User.create({ name: name.trim(), email: normalizedEmail, passwordHash });
-    res.cookie('token', createToken(user._id.toString()), cookieOptions());
+    res.cookie('token', createToken(user._id.toString(), user.role), cookieOptions());
     res.status(201).json({ user: publicUser(user) });
   } catch (error) {
     next(error);
@@ -44,7 +47,7 @@ router.post('/login', authLimiter, async (req, res, next) => {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
-    res.cookie('token', createToken(user._id.toString()), cookieOptions());
+    res.cookie('token', createToken(user._id.toString(), user.role), cookieOptions());
     res.json({ user: publicUser(user) });
   } catch (error) {
     next(error);

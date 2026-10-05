@@ -68,3 +68,24 @@ code {
   }
 }
 
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+
+  body {
+    background: #fbfaf5;
+  }
+
+  .certificate-page {
+    max-width: none;
+    padding: 0;
+  }
+
+  .certificate {
+    min-height: 100vh;
+    box-shadow: none;
+  }
+}
+

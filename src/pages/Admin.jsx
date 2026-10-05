@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FiBookOpen, FiClipboard, FiLayers, FiUsers } from 'react-icons/fi';
 import { adminAPI } from '../services/api';
+import AdminSidebar from '../components/admin/AdminSidebar';
 
 const Admin = () => {
   const [statistics, setStatistics] = useState(null);
@@ -14,9 +15,13 @@ const Admin = () => {
   }, []);
 
   const cards = [
-    ['Total students', statistics?.totalStudents, FiUsers],
+    ['Total users', (statistics?.totalStudents || 0) + (statistics?.totalAdmins || 0), FiUsers],
+    ['Total admins', statistics?.totalAdmins, FiUsers],
     ['Total courses', statistics?.totalCourses, FiBookOpen],
     ['Total lessons', statistics?.totalLessons, FiLayers],
+    ['Total practices', statistics?.totalPractices, FiBookOpen],
+    ['Submissions', statistics?.totalSubmissions, FiClipboard],
+    ['Active users', statistics?.activeUsers, FiUsers],
     ['Enrollments', statistics?.totalEnrollments, FiClipboard],
   ];
 
@@ -33,6 +38,9 @@ const Admin = () => {
 
         {error && <p className="mb-6 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
 
+        <div className="flex flex-col gap-8 lg:flex-row">
+        <AdminSidebar />
+        <div className="min-w-0 flex-1">
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {cards.map(([label, value, Icon]) => (
             <div key={label} className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
@@ -46,6 +54,9 @@ const Admin = () => {
         <div className="mt-8 bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
           <h2 className="text-xl font-bold text-gray-900 mb-4">Course management</h2>
           <p className="text-gray-600">Course and lesson creation endpoints are ready for the editor workflow.</p>
+          <Link to="/admin/practices" className="mt-4 inline-flex font-semibold text-blue-600 hover:text-blue-700">Manage practice exercises</Link>
+        </div>
+        </div>
         </div>
       </div>
     </div>

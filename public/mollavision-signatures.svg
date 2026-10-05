@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 110" role="img" aria-labelledby="title">
+  <title id="title">MollaVision executive signature</title>
+  <g fill="none" stroke="#173d5d" stroke-linecap="round" stroke-linejoin="round">
+    <path stroke-width="3" d="M18 72c18-37 25-45 32-7 5 27 19 30 28-22 6-34 14-35 13 11-1 31 9 43 22 23 13-19 25-42 31-54 4-8 7 0 5 14-3 27-6 49 7 48 17-2 22-33 34-48 8-19 18-27 15-7-4 25-2 42 11 41 14-1 22-29 33-42 8-10 10-2 7 10-5 21 0 35 15 34 14-1 29-13 42-28"/>
+    <path stroke-width="2.5" d="M33 49c21 9 45 13 73 10 37-4 70-18 104-16 26 2 48 9 83 5"/>
+    <path stroke-width="2.5" d="M13 82c48-4 91-4 137-2 52 2 106 8 157 2"/>
+    <path stroke-width="2" d="M111 16c-10 22-10 53-5 75M214 18c-8 25-8 47-1 70"/>
+  </g>
+</svg>

@@ -1,10 +1,14 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { FiArrowRight, FiBookOpen, FiClock } from 'react-icons/fi';
 import Card from '../common/Card';
 import Badge from '../common/Badge';
 import Button from '../common/Button';
+import { useAuth } from '../../context/AuthContext';
 
 const CourseCard = ({ course }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { isAuthenticated, loading } = useAuth();
   const difficultyColor = {
     Beginner: 'green',
     Intermediate: 'yellow',
@@ -39,7 +43,16 @@ const CourseCard = ({ course }) => {
         </span>
       </div>
 
-      <Link to={`/courses/${course.id}`} className="mt-auto">
+      <Link to={`/courses/${course.id}`} className="mt-auto" onClick={(event) => {
+        if (loading) {
+          event.preventDefault();
+          return;
+        }
+        if (!isAuthenticated) {
+          event.preventDefault();
+          navigate('/login', { state: { from: `/courses/${course.id}`, source: location.pathname } });
+        }
+      }}>
         <Button variant="primary" className="w-full justify-center text-sm">
           Start Learning
           <FiArrowRight size={16} />

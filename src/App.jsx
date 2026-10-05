@@ -14,6 +14,11 @@ import Register from './pages/Register';
 import NotFound from './pages/NotFound';
 import Admin from './pages/Admin';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import AdminPractices from './pages/AdminPractices';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
+import AdminUsers from './pages/AdminUsers';
+import AdminSubmissions from './pages/AdminSubmissions';
 
 function App() {
   return (
@@ -25,14 +30,19 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/courses" element={<Courses />} />
             <Route path="/courses/:courseId" element={<CourseDetails />} />
-            <Route path="/courses/:courseId/:lessonId" element={<Lesson />} />
-            <Route path="/practice" element={<Practice />} />
+            <Route path="/courses/:courseId/:lessonId" element={<ProtectedRoute><Lesson /></ProtectedRoute>} />
+            <Route path="/practice" element={<ProtectedRoute><Practice /></ProtectedRoute>} />
             <Route path="/projects" element={<Projects />} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/admin" element={<ProtectedRoute role="admin"><Admin /></ProtectedRoute>} />
-            <Route path="/certificates" element={<Certificates />} />
+            <Route path="/admin/practices" element={<ProtectedRoute role="admin"><AdminPractices /></ProtectedRoute>} />
+            <Route path="/admin/users" element={<ProtectedRoute role="admin"><AdminUsers /></ProtectedRoute>} />
+            <Route path="/admin/submissions" element={<ProtectedRoute role="admin"><AdminSubmissions /></ProtectedRoute>} />
+            <Route path="/certificates" element={<ProtectedRoute><Certificates /></ProtectedRoute>} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password/:token" element={<ResetPassword />} />
             <Route path="/tutorials" element={<Courses />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

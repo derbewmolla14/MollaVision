@@ -1,14 +1,35 @@
 import jwt from 'jsonwebtoken';
+import { createClerkClient, verifyToken } from '@clerk/backend';
 import User from '../models/User.js';
 
 export const authMiddleware = async (req, res, next) => {
   try {
-    const token = req.cookies.token || req.headers.authorization?.replace('Bearer ', '');
+    const authorization = req.headers.authorization;
+    const bearerToken = authorization?.startsWith('Bearer ') ? authorization.slice(7) : null;
+    const token = req.cookies.token || bearerToken;
     if (!token) return res.status(401).json({ message: 'Authentication required' });
+    if (bearerToken && !req.cookies.token && !process.env.CLERK_SECRET_KEY) {
+      return res.status(503).json({ message: 'Clerk backend authentication is not configured' });
+    }
 
-    const payload = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findById(payload.userId);
+    let user;
+    if (bearerToken && process.env.CLERK_SECRET_KEY) {
+      const payload = await verifyToken(bearerToken, { secretKey: process.env.CLERK_SECRET_KEY });
+      const clerkClient = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
+      const clerkUser = await clerkClient.users.getUser(payload.sub);
+      const email = clerkUser.primaryEmailAddress?.emailAddress?.toLowerCase();
+      if (!email) return res.status(401).json({ message: 'Authenticated user has no email address' });
+      user = await User.findOneAndUpdate(
+        { $or: [{ clerkId: clerkUser.id }, { email }] },
+        { $set: { name: clerkUser.fullName || clerkUser.firstName || 'Learner', email, clerkId: clerkUser.id } },
+        { new: true, upsert: true, setDefaultsOnInsert: true }
+      );
+    } else {
+      const payload = jwt.verify(token, process.env.JWT_SECRET);
+      user = await User.findById(payload.userId);
+    }
     if (!user) return res.status(401).json({ message: 'Authentication required' });
+    if (user.status === 'suspended') return res.status(403).json({ message: 'Your account has been suspended.' });
 
     req.user = user;
     next();

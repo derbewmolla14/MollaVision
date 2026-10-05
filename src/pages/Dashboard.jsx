@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { FiArrowRight, FiBookOpen } from 'react-icons/fi';
+import { FiArrowRight, FiAward, FiBookOpen } from 'react-icons/fi';
 import { useAuth } from '../context/AuthContext';
 import { courses } from '../data/courses';
 import useProgress from '../hooks/useProgress';
@@ -18,6 +18,10 @@ const Dashboard = () => {
           <h1 className="text-4xl font-bold text-gray-900">Welcome back, {user?.name}</h1>
           <p className="mt-2 text-gray-600">Keep your momentum going with your enrolled courses.</p>
           {location.state?.message && <p className="mt-4 rounded-lg bg-green-50 px-4 py-3 text-sm font-medium text-green-700">{location.state.message}</p>}
+          <Link to="/certificates" className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-700">
+            <FiAward size={17} />
+            View my certificates
+          </Link>
         </div>
 
         <section>

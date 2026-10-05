@@ -11,7 +11,7 @@ const CourseDetails = () => {
   const { courseId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const course = getCourseById(courseId);
   const { enrollCourse, isEnrolled, getLastLesson, completedCount } = useProgress(courseId);
   const lessons = getLessonsByOrder(courseId);
@@ -153,7 +153,7 @@ const CourseDetails = () => {
                       key={lesson.id}
                       to={`/courses/${courseId}/${lesson.id}`}
                     onClick={(event) => {
-                      if (!user) {
+                      if (!loading && !user) {
                         event.preventDefault();
                         navigate('/login', { state: { from: location.pathname } });
                       }
@@ -191,7 +191,7 @@ const CourseDetails = () => {
                     to={`/courses/${courseId}/${startLesson}`}
                     className="w-full"
                     onClick={(event) => {
-                      if (!user) {
+                      if (!loading && !user) {
                         event.preventDefault();
                         navigate('/login', { state: { from: location.pathname } });
                       }
@@ -213,7 +213,7 @@ const CourseDetails = () => {
                     variant="primary"
                     className="w-full mb-4"
                     onClick={() => {
-                      if (!user) {
+                      if (!loading && !user) {
                         navigate('/login', { state: { from: location.pathname } });
                         return;
                       }

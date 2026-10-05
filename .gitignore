@@ -2,6 +2,11 @@ node_modules
 dist
 .env
 .env.local
+.env.*
+!.env.example
+server/.env
+server/.env.*
+!server/.env.example
 .DS_Store
 *.log
 .vscode

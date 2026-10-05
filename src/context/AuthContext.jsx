@@ -1,48 +1,49 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { authAPI } from '../services/api';
+import { useAuth as useClerkAuth, useClerk, useUser } from '@clerk/react';
+import { authAPI, setAuthTokenProvider } from '../services/api';
 
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { isLoaded, user: clerkUser } = useUser();
+  const { getToken } = useClerkAuth();
+  const { signOut } = useClerk();
+  const clerkMappedUser = useMemo(() => {
+    if (!clerkUser) return null;
+    return {
+      id: clerkUser.id,
+      name: clerkUser.fullName || clerkUser.firstName || 'Learner',
+      email: clerkUser.primaryEmailAddress?.emailAddress || '',
+      role: clerkUser.publicMetadata?.role === 'admin' ? 'admin' : 'student',
+      isPremium: clerkUser.publicMetadata?.isPremium === true,
+    };
+  }, [clerkUser]);
+  const [backendUser, setBackendUser] = useState(null);
 
   useEffect(() => {
-    authAPI.getMe()
-      .then(({ data }) => setUser(data.user))
-      .catch(() => setUser(null))
-      .finally(() => setLoading(false));
-  }, []);
+    setAuthTokenProvider(getToken);
+    return () => setAuthTokenProvider(null);
+  }, [getToken]);
 
-  const login = async (credentials) => {
-    const { data } = await authAPI.login(credentials);
-    setUser(data.user);
-    return data.user;
-  };
+  useEffect(() => {
+    if (!isLoaded || !clerkUser) {
+      setBackendUser(null);
+      return;
+    }
+    authAPI.getMe().then(({ data }) => setBackendUser(data.user)).catch(() => setBackendUser(null));
+  }, [clerkUser, isLoaded]);
 
-  const register = async (details) => {
-    const { data } = await authAPI.register(details);
-    setUser(data.user);
-    return data.user;
-  };
+  const user = backendUser || clerkMappedUser;
 
   const logout = async () => {
-    try {
-      await authAPI.logout();
-    } finally {
-      setUser(null);
-    }
+    await signOut({ redirectUrl: '/' });
   };
 
-  const refreshUser = async () => {
-    const { data } = await authAPI.getMe();
-    setUser(data.user);
-    return data.user;
-  };
+  const refreshUser = async () => user;
 
   const value = useMemo(
-    () => ({ user, loading, isAuthenticated: Boolean(user), login, register, logout, refreshUser }),
-    [user, loading]
+    () => ({ user, loading: !isLoaded, isAuthenticated: Boolean(clerkUser), logout, refreshUser }),
+    [user, isLoaded, clerkUser]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

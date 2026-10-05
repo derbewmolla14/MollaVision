@@ -1,7 +1,3 @@
-import dotenv from 'dotenv';
-import fs from 'node:fs';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
@@ -15,11 +11,6 @@ import progressRoutes from './routes/progressRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import practiceRoutes from './routes/practiceRoutes.js';
 import chapterRoutes from './routes/chapterRoutes.js';
-
-const serverDirectory = path.dirname(fileURLToPath(import.meta.url));
-const serverEnvPath = path.join(serverDirectory, '.env');
-const rootEnvPath = path.join(serverDirectory, '..', '.env');
-dotenv.config({ path: fs.existsSync(serverEnvPath) ? serverEnvPath : rootEnvPath });
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -62,11 +53,16 @@ app.use((error, req, res, next) => {
   res.status(error.status || 500).json({ message: 'Something went wrong on the server' });
 });
 
-app.listen(port, '0.0.0.0', () => {
-  console.log(`MollaVision API running on http://localhost:${port}`);
-});
+const startServer = async () => {
+  try {
+    await connectDatabase();
+    app.listen(port, '0.0.0.0', () => {
+      console.log(`MollaVision API running on http://localhost:${port}`);
+    });
+  } catch (error) {
+    console.error('MongoDB connection failed:', error);
+    process.exitCode = 1;
+  }
+};
 
-connectDatabase().catch((error) => {
-  console.error(`MongoDB connection failed: ${error.message}`);
-  console.error('Authentication and other database routes will return 503 until MongoDB is available.');
-});
+startServer();

@@ -23,7 +23,6 @@
     "express-rate-limit": "^7.4.0",
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
-    "mongodb-memory-server": "^10.4.3",
     "mongoose": "^8.5.1",
     "nodemailer": "^10.0.14",
     "qrcode.react": "^4.2.0",

@@ -92,7 +92,7 @@ The frontend runs at `http://localhost:3000`; the API runs at `http://localhost:
 
 ## Environment variables
 
-The backend reads `MONGODB_URI`, `JWT_SECRET`, `CLERK_SECRET_KEY`, `PORT`, `CLIENT_URL`, `CLIENT_URLS` (optional comma-separated list), and `NODE_ENV`.
+The backend reads `MONGODB_URI`, `JWT_SECRET`, `CLERK_SECRET_KEY`, `PORT`, `CLIENT_URL`, `CLIENT_URLS` (optional comma-separated list), and `NODE_ENV`. Local MongoDB URIs are rejected unless `ALLOW_LOCAL_MONGODB=true` is explicitly set in development.
 
 The frontend reads:
 - `VITE_CLERK_PUBLISHABLE_KEY` (required)

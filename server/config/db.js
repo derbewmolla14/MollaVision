@@ -1,43 +1,34 @@
 import mongoose from 'mongoose';
+import dotenv from 'dotenv';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 let databaseReady = false;
 
-const connectWithUri = async (uri, timeoutMs = 5000) => {
-  await mongoose.connect(uri, { serverSelectionTimeoutMS: timeoutMs });
-};
+const serverDirectory = path.dirname(fileURLToPath(import.meta.url));
+const serverEnvPath = path.join(serverDirectory, '..', '.env');
+const rootEnvPath = path.join(serverDirectory, '..', '..', '.env');
+dotenv.config({ path: fs.existsSync(serverEnvPath) ? serverEnvPath : rootEnvPath });
 
 export const connectDatabase = async () => {
-  const configuredUri = process.env.MONGODB_URI;
+  const configuredUri = process.env.MONGODB_URI?.trim();
+  console.log(`MONGODB_URI configured: ${configuredUri ? 'yes' : 'no'}`);
+
   if (!configuredUri) {
-    throw new Error('MONGODB_URI is not configured. Add it to server/.env');
+    throw new Error('MONGODB_URI is missing. Set it in the server environment before starting MollaVision.');
   }
 
-  try {
-    await connectWithUri(configuredUri);
-    databaseReady = true;
-    console.log('MongoDB connected successfully');
-    return;
-  } catch (error) {
-    console.error(`Error connecting to MongoDB: ${error.message}`);
+  const isLocalMongoUri = /^mongodb(?:\+srv)?:\/\/(?:[^@/]+@)?(?:localhost|127\.0\.0\.1|\[::1\])(?::\d+)?(?:\/|$)/i.test(configuredUri);
+  const localMongoEnabled = process.env.NODE_ENV === 'development'
+    && process.env.ALLOW_LOCAL_MONGODB === 'true';
+  if (isLocalMongoUri && !localMongoEnabled) {
+    throw new Error('Local MongoDB is disabled. Use MongoDB Atlas or set ALLOW_LOCAL_MONGODB=true in development.');
   }
 
-  if (process.env.NODE_ENV === 'production') {
-    throw new Error('MongoDB connection failed. Check MONGODB_URI and that MongoDB is running.');
-  }
-
-  try {
-    console.error('Local MongoDB is not reachable. Starting an in-memory MongoDB instance for development.');
-    const { MongoMemoryServer } = await import('mongodb-memory-server');
-    const memoryServer = await MongoMemoryServer.create({
-      instance: { launchTimeout: 120000 },
-    });
-    await connectWithUri(memoryServer.getUri(), 20000);
-    databaseReady = true;
-    console.log('In-memory MongoDB connected successfully (development fallback; data does not persist)');
-  } catch (memoryError) {
-    console.error(`MongoDB connection failed: ${memoryError.message}`);
-    throw memoryError;
-  }
+  await mongoose.connect(configuredUri);
+  databaseReady = true;
+  console.log('MongoDB connected successfully');
 };
 
 export const isDatabaseReady = () => databaseReady;

@@ -4,6 +4,7 @@ import { FiBarChart2, FiBookOpen, FiClipboard, FiSettings, FiUsers } from 'react
 const links = [
   ['/admin', 'Dashboard', FiBarChart2],
   ['/admin/users', 'Users', FiUsers],
+  ['/admin/courses', 'Courses & lessons', FiBookOpen],
   ['/admin/practices', 'Practice', FiBookOpen],
   ['/admin/submissions', 'Submissions', FiClipboard],
   ['/admin/settings', 'Settings', FiSettings],

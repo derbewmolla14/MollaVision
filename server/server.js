@@ -14,6 +14,7 @@ import lessonRoutes from './routes/lessonRoutes.js';
 import progressRoutes from './routes/progressRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import practiceRoutes from './routes/practiceRoutes.js';
+import chapterRoutes from './routes/chapterRoutes.js';
 
 const serverDirectory = path.dirname(fileURLToPath(import.meta.url));
 const serverEnvPath = path.join(serverDirectory, '.env');
@@ -49,6 +50,7 @@ app.use('/api/lessons', databaseMiddleware, lessonRoutes);
 app.use('/api/progress', databaseMiddleware, progressRoutes);
 app.use('/api/admin', databaseMiddleware, adminRoutes);
 app.use('/api/practices', databaseMiddleware, practiceRoutes);
+app.use('/api/chapters', databaseMiddleware, chapterRoutes);
 
 app.use((error, req, res, next) => {
   console.error(error);

@@ -1,24 +1,31 @@
-import { useState } from 'react';
-import { Link, NavLink } from 'react-router-dom';
-import { FiMenu, FiX, FiSearch } from 'react-icons/fi';
-import Button from '../common/Button';
-import { Show, SignInButton, SignUpButton, UserButton } from '@clerk/react';
+import { useState } from "react";
+import { Link, NavLink } from "react-router-dom";
+import { FiMenu, FiX, FiSearch } from "react-icons/fi";
+import Button from "../common/Button";
+import { Show, SignInButton, SignUpButton, UserButton } from "@clerk/react";
+import { useAuth } from "../../context/AuthContext";
 
 const navItems = [
-  { to: '/tutorials', label: 'Tutorials' },
-  { to: '/courses', label: 'Courses' },
-  { to: '/practice', label: 'Practice' },
-  { to: '/projects', label: 'Projects' },
+  { to: "/tutorials", label: "Tutorials" },
+  { to: "/courses", label: "Courses" },
+  { to: "/practice", label: "Practice" },
+  { to: "/projects", label: "Projects" },
 ];
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user } = useAuth();
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/90 backdrop-blur-sm">
       <div className="container-custom">
         <div className="flex items-center justify-between gap-4 py-3">
-          <Link to="/" className="flex items-center gap-2 text-lg font-bold text-slate-900 transition-colors hover:text-blue-600">
-            <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 text-sm font-bold text-white shadow-sm">M</span>
+          <Link
+            to="/"
+            className="flex items-center gap-2 text-lg font-bold text-slate-900 transition-colors hover:text-blue-600"
+          >
+            <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-blue-300 text-sm font-bold text-white shadow-sm">
+              <img src="/mollavission.png" alt="" />
+            </span>
             <span>MollaVision</span>
           </Link>
 
@@ -29,7 +36,9 @@ const Navbar = () => {
                 to={to}
                 className={({ isActive }) =>
                   `rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                    isActive ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                    isActive
+                      ? "bg-blue-50 text-blue-700"
+                      : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
                   }`
                 }
               >
@@ -41,7 +50,10 @@ const Navbar = () => {
           <div className="hidden flex-1 items-center justify-end gap-3 md:flex">
             <label className="relative block w-full max-w-xs">
               <span className="sr-only">Search courses and lessons</span>
-              <FiSearch className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+              <FiSearch
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                size={16}
+              />
               <input
                 type="search"
                 placeholder="Search courses and lessons..."
@@ -49,12 +61,42 @@ const Navbar = () => {
               />
             </label>
 
-            <Show when="signed-out"><SignInButton mode="modal"><Button variant="secondary" className="px-4 py-2.5 text-sm">Login</Button></SignInButton><SignUpButton mode="modal"><Button variant="primary" className="px-4 py-2.5 text-sm">Sign Up</Button></SignUpButton></Show>
-            <Show when="signed-in"><Link to="/dashboard" className="text-sm font-medium text-slate-600 hover:text-blue-600">Dashboard</Link><UserButton afterSignOutUrl="/" /></Show>
+            <Show when="signed-out">
+              <SignInButton mode="modal">
+                <Button variant="secondary" className="px-4 py-2.5 text-sm">
+                  Login
+                </Button>
+              </SignInButton>
+              <SignUpButton mode="modal">
+                <Button variant="primary" className="px-4 py-2.5 text-sm">
+                  Sign Up
+                </Button>
+              </SignUpButton>
+            </Show>
+            <Show when="signed-in">
+              <Link
+                to="/dashboard"
+                className="text-sm font-medium text-slate-600 hover:text-blue-600"
+              >
+                Dashboard
+              </Link>
+              {user?.role === "admin" && (
+                <Link
+                  to="/admin"
+                  className="text-sm font-medium text-blue-600 hover:text-blue-700"
+                >
+                  Admin
+                </Link>
+              )}
+              <UserButton afterSignOutUrl="/" />
+            </Show>
           </div>
 
           <div className="flex items-center gap-2 md:hidden">
-            <button className="rounded-lg p-2 text-slate-600 hover:bg-slate-100" aria-label="Search courses">
+            <button
+              className="rounded-lg p-2 text-slate-600 hover:bg-slate-100"
+              aria-label="Search courses"
+            >
               <FiSearch size={18} />
             </button>
             <button
@@ -76,7 +118,9 @@ const Navbar = () => {
                   to={to}
                   className={({ isActive }) =>
                     `rounded-xl px-3 py-2 text-sm font-medium ${
-                      isActive ? 'bg-blue-50 text-blue-700' : 'text-slate-700 hover:bg-slate-100'
+                      isActive
+                        ? "bg-blue-50 text-blue-700"
+                        : "text-slate-700 hover:bg-slate-100"
                     }`
                   }
                   onClick={() => setIsMenuOpen(false)}
@@ -86,11 +130,38 @@ const Navbar = () => {
               ))}
 
               <Show when="signed-out">
-                <SignInButton mode="modal"><button type="button" onClick={() => setIsMenuOpen(false)} className="block rounded-xl px-3 py-2 text-left text-sm font-medium text-slate-700 hover:bg-slate-100">Login</button></SignInButton>
-                <SignUpButton mode="modal"><Button variant="primary" className="w-full justify-center">Sign Up</Button></SignUpButton>
+                <SignInButton mode="modal">
+                  <button
+                    type="button"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="block rounded-xl px-3 py-2 text-left text-sm font-medium text-slate-700 hover:bg-slate-100"
+                  >
+                    Login
+                  </button>
+                </SignInButton>
+                <SignUpButton mode="modal">
+                  <Button variant="primary" className="w-full justify-center">
+                    Sign Up
+                  </Button>
+                </SignUpButton>
               </Show>
               <Show when="signed-in">
-                <Link to="/dashboard" onClick={() => setIsMenuOpen(false)} className="block rounded-xl px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">Dashboard</Link>
+                <Link
+                  to="/dashboard"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="block rounded-xl px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
+                >
+                  Dashboard
+                </Link>
+                {user?.role === "admin" && (
+                  <Link
+                    to="/admin"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="block rounded-xl px-3 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50"
+                  >
+                    Admin Dashboard
+                  </Link>
+                )}
                 <UserButton afterSignOutUrl="/" />
               </Show>
             </div>

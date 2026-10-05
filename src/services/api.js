@@ -32,6 +32,23 @@ export const authAPI = {
 export const courseAPI = {
   list: (params) => api.get('/courses', { params }),
   get: (courseId) => api.get(`/courses/${courseId}`),
+  create: (payload) => api.post('/courses', payload),
+  update: (courseId, payload) => api.put(`/courses/${courseId}`, payload),
+  remove: (courseId) => api.delete(`/courses/${courseId}`),
+};
+
+export const chapterAPI = {
+  list: (courseId) => api.get(`/chapters/course/${courseId}`),
+  create: (courseId, payload) => api.post(`/chapters/course/${courseId}`, payload),
+  update: (chapterId, payload) => api.put(`/chapters/${chapterId}`, payload),
+  remove: (chapterId) => api.delete(`/chapters/${chapterId}`),
+};
+
+export const lessonAdminAPI = {
+  list: (courseSlug) => api.get(`/lessons/course/${courseSlug}`),
+  create: (courseId, payload) => api.post(`/lessons/course/${courseId}`, payload),
+  update: (lessonId, payload) => api.put(`/lessons/${lessonId}`, payload),
+  remove: (lessonId) => api.delete(`/lessons/${lessonId}`),
 };
 
 export const progressAPI = {

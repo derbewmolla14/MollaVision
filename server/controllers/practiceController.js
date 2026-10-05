@@ -85,13 +85,15 @@ export const submitPractice = async (req, res, next) => {
       const submitted = req.body.answers.find((item) => item.questionId === question._id.toString());
       return { questionId: question._id, answer: String(submitted?.answer || '').trim() };
     });
+    const autoGradableTypes = new Set(['multiple-choice', 'true-false', 'fill-blank']);
     const score = practice.questions.reduce((total, question, index) => (
-      total + (answers[index].answer.toLowerCase() === question.correctAnswer.trim().toLowerCase() ? question.marks : 0)
+      total + (autoGradableTypes.has(question.type) && answers[index].answer.toLowerCase() === question.correctAnswer.trim().toLowerCase() ? question.marks : 0)
     ), 0);
     const totalMarks = practice.questions.reduce((total, question) => total + question.marks, 0);
+    const hasManualQuestions = practice.questions.some((question) => !autoGradableTypes.has(question.type));
     const submission = await PracticeSubmission.findOneAndUpdate(
       { practiceId: practice._id, userId: req.user._id },
-      { answers, score, totalMarks, percentage: totalMarks ? Math.round((score / totalMarks) * 100) : 0, submittedAt: new Date(), status: 'graded' },
+      { answers, score, totalMarks, percentage: totalMarks ? Math.round((score / totalMarks) * 100) : 0, submittedAt: new Date(), status: hasManualQuestions ? 'submitted' : 'graded' },
       { upsert: true, new: true, runValidators: true }
     );
     res.json({ message: 'Practice submitted successfully', submission: { score: submission.score, totalMarks: submission.totalMarks, percentage: submission.percentage, status: submission.status, submittedAt: submission.submittedAt } });

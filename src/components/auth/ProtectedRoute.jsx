@@ -9,7 +9,7 @@ const ProtectedRoute = ({ children, role }) => {
     return <div className="min-h-screen flex items-center justify-center text-gray-600">Loading your account...</div>;
   }
 
-  if (!user) return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+  if (!user) return <Navigate to="/login" replace state={{ from: `${location.pathname}${location.search}` }} />;
   if (role && user.role !== role) return <Navigate to="/dashboard" replace />;
   return children;
 };

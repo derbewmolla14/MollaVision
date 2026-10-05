@@ -19,6 +19,8 @@ import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import AdminUsers from './pages/AdminUsers';
 import AdminSubmissions from './pages/AdminSubmissions';
+import AdminCourses from './pages/AdminCourses';
+import AdminSettings from './pages/AdminSettings';
 
 function App() {
   return (
@@ -36,7 +38,10 @@ function App() {
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/admin" element={<ProtectedRoute role="admin"><Admin /></ProtectedRoute>} />
             <Route path="/admin/practices" element={<ProtectedRoute role="admin"><AdminPractices /></ProtectedRoute>} />
+            <Route path="/admin/practice" element={<ProtectedRoute role="admin"><AdminPractices /></ProtectedRoute>} />
             <Route path="/admin/users" element={<ProtectedRoute role="admin"><AdminUsers /></ProtectedRoute>} />
+            <Route path="/admin/courses" element={<ProtectedRoute role="admin"><AdminCourses /></ProtectedRoute>} />
+            <Route path="/admin/settings" element={<ProtectedRoute role="admin"><AdminSettings /></ProtectedRoute>} />
             <Route path="/admin/submissions" element={<ProtectedRoute role="admin"><AdminSubmissions /></ProtectedRoute>} />
             <Route path="/certificates" element={<ProtectedRoute><Certificates /></ProtectedRoute>} />
             <Route path="/login" element={<Login />} />

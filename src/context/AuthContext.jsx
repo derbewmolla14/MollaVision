@@ -19,6 +19,7 @@ export const AuthProvider = ({ children }) => {
     };
   }, [clerkUser]);
   const [backendUser, setBackendUser] = useState(null);
+  const [backendLoading, setBackendLoading] = useState(true);
 
   useEffect(() => {
     setAuthTokenProvider(getToken);
@@ -28,12 +29,19 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     if (!isLoaded || !clerkUser) {
       setBackendUser(null);
+      setBackendLoading(false);
       return;
     }
-    authAPI.getMe().then(({ data }) => setBackendUser(data.user)).catch(() => setBackendUser(null));
+    setBackendLoading(true);
+    authAPI.getMe()
+      .then(({ data }) => setBackendUser(data.user))
+      .catch(() => setBackendUser(null))
+      .finally(() => setBackendLoading(false));
   }, [clerkUser, isLoaded]);
 
-  const user = backendUser || clerkMappedUser;
+  const user = backendUser
+    ? { ...backendUser, role: clerkMappedUser?.role || 'student' }
+    : clerkMappedUser;
 
   const logout = async () => {
     await signOut({ redirectUrl: '/' });
@@ -42,8 +50,8 @@ export const AuthProvider = ({ children }) => {
   const refreshUser = async () => user;
 
   const value = useMemo(
-    () => ({ user, loading: !isLoaded, isAuthenticated: Boolean(clerkUser), logout, refreshUser }),
-    [user, isLoaded, clerkUser]
+    () => ({ user, loading: !isLoaded || backendLoading, isAuthenticated: Boolean(clerkUser), logout, refreshUser }),
+    [user, isLoaded, clerkUser, backendLoading]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

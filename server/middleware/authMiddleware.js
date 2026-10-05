@@ -19,11 +19,14 @@ export const authMiddleware = async (req, res, next) => {
       const clerkUser = await clerkClient.users.getUser(payload.sub);
       const email = clerkUser.primaryEmailAddress?.emailAddress?.toLowerCase();
       if (!email) return res.status(401).json({ message: 'Authenticated user has no email address' });
+      const clerkRole = clerkUser.publicMetadata?.role === 'admin' ? 'admin' : 'student';
       user = await User.findOneAndUpdate(
         { $or: [{ clerkId: clerkUser.id }, { email }] },
-        { $set: { name: clerkUser.fullName || clerkUser.firstName || 'Learner', email, clerkId: clerkUser.id } },
+        { $set: { name: clerkUser.fullName || clerkUser.firstName || 'Learner', email, clerkId: clerkUser.id, profileImage: clerkUser.imageUrl || '', role: clerkRole } },
         { new: true, upsert: true, setDefaultsOnInsert: true }
       );
+      req.clerkUser = clerkUser;
+      req.clerkRole = clerkRole;
     } else {
       const payload = jwt.verify(token, process.env.JWT_SECRET);
       user = await User.findById(payload.userId);
@@ -32,6 +35,7 @@ export const authMiddleware = async (req, res, next) => {
     if (user.status === 'suspended') return res.status(403).json({ message: 'Your account has been suspended.' });
 
     req.user = user;
+    if (!req.clerkRole) req.clerkRole = user.role;
     next();
   } catch {
     return res.status(401).json({ message: 'Invalid or expired authentication' });

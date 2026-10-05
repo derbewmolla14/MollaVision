@@ -14,6 +14,7 @@ const resourceSchema = new mongoose.Schema(
 const lessonSchema = new mongoose.Schema(
   {
     courseId: { type: mongoose.Schema.Types.ObjectId, ref: 'Course', required: true, index: true },
+    chapterId: { type: mongoose.Schema.Types.ObjectId, ref: 'Chapter', default: null, index: true },
     title: { type: String, required: true, trim: true },
     description: { type: String, default: '' },
     content: { type: mongoose.Schema.Types.Mixed, default: [] },
@@ -29,6 +30,7 @@ const lessonSchema = new mongoose.Schema(
     isPreview: { type: Boolean, default: false },
     isPremium: { type: Boolean, default: false },
     duration: { type: Number, default: 0 },
+    isPublished: { type: Boolean, default: true },
   },
   { timestamps: true }
 );

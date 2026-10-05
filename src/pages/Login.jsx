@@ -19,13 +19,20 @@ const Login = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
-      <SignIn
-        routing="path"
-        path="/login"
-        signUpUrl={signUpUrl}
-        fallbackRedirectUrl={from}
-        appearance={{ variables: { colorPrimary: '#2563eb', borderRadius: '0.5rem' } }}
-      />
+      <div className="w-full max-w-md">
+        <div className="mb-6 text-center">
+          <div className="mx-auto inline-flex h-12 w-12 items-center justify-center rounded-xl bg-blue-600 text-lg font-bold text-white shadow-sm">M</div>
+          <h1 className="mt-3 text-2xl font-bold text-slate-900">MollaVision</h1>
+        </div>
+        <SignIn
+          routing="path"
+          path="/login"
+          signUpUrl={signUpUrl}
+          fallbackRedirectUrl={from}
+          localization={{ formButtonPrimary: 'Login' }}
+          appearance={{ options: { socialButtonsPlacement: 'bottom' } }}
+        />
+      </div>
     </div>
   );
 };

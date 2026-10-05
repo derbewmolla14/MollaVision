@@ -1,10 +1,12 @@
 import Course from '../models/Course.js';
+import Lesson from '../models/Lesson.js';
+import Chapter from '../models/Chapter.js';
 
 const makeSlug = (title) => title.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
 export const listCourses = async (req, res, next) => {
   try {
-    const filter = { isPublished: true };
+    const filter = req.user?.role === 'admin' ? {} : { isPublished: true };
     if (req.query.category) filter.category = req.query.category;
     if (req.query.level) filter.level = req.query.level;
     if (req.query.isPremium) filter.isPremium = req.query.isPremium === 'true';
@@ -80,9 +82,9 @@ export const updateCourse = async (req, res, next) => {
 
 export const deleteCourse = async (req, res, next) => {
   try {
-    const course = await Course.findByIdAndDelete(req.params.courseId);
+    const course = await Course.findByIdAndUpdate(req.params.courseId, { isPublished: false }, { new: true });
     if (!course) return res.status(404).json({ message: 'Course not found' });
-    res.json({ message: 'Course deleted' });
+    res.json({ message: 'Course unpublished', course });
   } catch (error) {
     next(error);
   }

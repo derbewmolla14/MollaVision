@@ -5,7 +5,7 @@ import { deleteUser, getStatistics, getSubmission, getUser, gradeSubmission, lis
 
 const router = express.Router();
 router.use(authMiddleware, adminMiddleware);
-router.get('/statistics', getStatistics);
+router.get(['/statistics', '/dashboard'], getStatistics);
 router.get('/users', listUsers);
 router.get('/users/:userId', getUser);
 router.patch('/users/:userId/role', updateUserRole);

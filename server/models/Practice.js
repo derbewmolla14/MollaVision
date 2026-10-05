@@ -10,6 +10,7 @@ const questionSchema = new mongoose.Schema({
   options: [optionSchema],
   correctAnswer: { type: String, required: true, trim: true },
   marks: { type: Number, min: 1, default: 1 },
+  explanation: { type: String, default: '', trim: true },
 });
 
 const practiceSchema = new mongoose.Schema(
@@ -18,6 +19,7 @@ const practiceSchema = new mongoose.Schema(
     description: { type: String, required: true, trim: true },
     courseId: { type: mongoose.Schema.Types.ObjectId, ref: 'Course', required: true, index: true },
     chapter: { type: String, required: true, trim: true, maxlength: 120 },
+    chapterId: { type: mongoose.Schema.Types.ObjectId, ref: 'Chapter', default: null, index: true },
     difficulty: { type: String, enum: ['Beginner', 'Intermediate', 'Advanced'], default: 'Beginner' },
     marks: { type: Number, min: 1, default: 1 },
     questions: { type: [questionSchema], validate: [(items) => items.length > 0, 'At least one question is required'] },

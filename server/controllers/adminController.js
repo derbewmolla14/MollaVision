@@ -4,13 +4,15 @@ import Lesson from '../models/Lesson.js';
 import User from '../models/User.js';
 import Practice from '../models/Practice.js';
 import PracticeSubmission from '../models/PracticeSubmission.js';
+import Chapter from '../models/Chapter.js';
 
 export const getStatistics = async (req, res, next) => {
   try {
-    const [totalStudents, totalAdmins, totalCourses, freeCourses, premiumCourses, totalLessons, totalEnrollments, totalPractices, totalSubmissions, activeUsers, recentRegistrations, recentSubmissions] = await Promise.all([
+    const [totalStudents, totalAdmins, totalCourses, totalChapters, freeCourses, premiumCourses, totalLessons, totalEnrollments, totalPractices, totalSubmissions, activeUsers, recentRegistrations, recentSubmissions, recentCourses] = await Promise.all([
       User.countDocuments({ role: 'student' }),
       User.countDocuments({ role: 'admin' }),
       Course.countDocuments(),
+      Chapter.countDocuments(),
       Course.countDocuments({ isPremium: false }),
       Course.countDocuments({ isPremium: true }),
       Lesson.countDocuments(),
@@ -20,8 +22,9 @@ export const getStatistics = async (req, res, next) => {
       User.countDocuments({ status: 'active' }),
       User.find().select('name email role status createdAt').sort({ createdAt: -1 }).limit(5),
       PracticeSubmission.find().populate('userId', 'name email').populate('practiceId', 'title').sort({ submittedAt: -1 }).limit(5),
+      Course.find().select('title isPublished createdAt').sort({ createdAt: -1 }).limit(5),
     ]);
-    res.json({ statistics: { totalStudents, totalAdmins, totalCourses, freeCourses, premiumCourses, totalLessons, totalEnrollments, totalPractices, totalSubmissions, activeUsers, recentRegistrations, recentSubmissions } });
+    res.json({ statistics: { totalStudents, totalAdmins, totalCourses, totalChapters, freeCourses, premiumCourses, totalLessons, totalEnrollments, totalPractices, totalSubmissions, activeUsers, recentRegistrations, recentSubmissions, recentCourses } });
   } catch (error) {
     next(error);
   }
@@ -69,9 +72,9 @@ export const updateUserStatus = async (req, res, next) => {
 export const deleteUser = async (req, res, next) => {
   try {
     if (req.params.userId === req.user._id.toString()) return res.status(400).json({ message: 'You cannot delete your own account' });
-    const user = await User.findByIdAndDelete(req.params.userId);
+    const user = await User.findByIdAndUpdate(req.params.userId, { status: 'suspended' }, { new: true }).select('name email role status');
     if (!user) return res.status(404).json({ message: 'User not found' });
-    res.json({ message: 'User deleted' });
+    res.json({ message: 'User deactivated', user });
   } catch (error) { next(error); }
 };
 
@@ -95,7 +98,10 @@ export const getSubmission = async (req, res, next) => {
 
 export const gradeSubmission = async (req, res, next) => {
   try {
-    const submission = await PracticeSubmission.findByIdAndUpdate(req.params.submissionId, { score: req.body.score, percentage: req.body.totalMarks ? Math.round((req.body.score / req.body.totalMarks) * 100) : 0, totalMarks: req.body.totalMarks, feedback: req.body.feedback || '', status: 'graded', gradedAt: new Date(), gradedBy: req.user._id }, { new: true, runValidators: true });
+    const score = Number(req.body.score);
+    const totalMarks = Number(req.body.totalMarks);
+    if (!Number.isFinite(score) || !Number.isFinite(totalMarks) || score < 0 || totalMarks < 0 || score > totalMarks) return res.status(400).json({ message: 'Score must be between zero and total marks' });
+    const submission = await PracticeSubmission.findByIdAndUpdate(req.params.submissionId, { score, percentage: totalMarks ? Math.round((score / totalMarks) * 100) : 0, totalMarks, feedback: String(req.body.feedback || '').trim(), status: 'graded', gradedAt: new Date(), gradedBy: req.user._id }, { new: true, runValidators: true });
     if (!submission) return res.status(404).json({ message: 'Submission not found' });
     res.json({ submission });
   } catch (error) { next(error); }

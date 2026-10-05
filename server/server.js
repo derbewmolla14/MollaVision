@@ -25,11 +25,16 @@ const app = express();
 const port = process.env.PORT || 5000;
 
 app.use(helmet());
-const allowedOrigins = [
-  process.env.CLIENT_URL || 'http://localhost:5173',
+const configuredOrigins = [process.env.CLIENT_URL, process.env.CLIENT_URLS]
+  .filter(Boolean)
+  .flatMap((value) => value.split(','))
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+const allowedOrigins = [...new Set([
+  ...configuredOrigins,
   'http://localhost:5173',
   'http://localhost:3000',
-];
+])];
 app.use(cors({
   origin: (origin, callback) => callback(null, !origin || allowedOrigins.includes(origin)),
   credentials: true,

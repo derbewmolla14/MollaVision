@@ -6,6 +6,20 @@ import { AuthProvider } from './context/AuthContext.jsx'
 import { ClerkProvider } from '@clerk/react'
 
 const clerkPublishableKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
+const configuredApiUrl = import.meta.env.VITE_API_URL?.trim()
+const runtimeConfigErrors = []
+
+if (!clerkPublishableKey) {
+  runtimeConfigErrors.push('VITE_CLERK_PUBLISHABLE_KEY is required.')
+}
+
+if (import.meta.env.PROD && clerkPublishableKey?.includes('_test_')) {
+  runtimeConfigErrors.push('A production Clerk publishable key is required in production (use pk_live_...).')
+}
+
+if (import.meta.env.PROD && (!configuredApiUrl || /^https?:\/\/localhost(?::\d+)?/i.test(configuredApiUrl))) {
+  runtimeConfigErrors.push('VITE_API_URL must point to your deployed backend API in production (not localhost).')
+}
 
 const clerkAppearance = {
   layout: {
@@ -48,12 +62,37 @@ const clerkLocalization = {
   },
 }
 
+const RuntimeConfigurationError = ({ errors }) => (
+  <div className="min-h-screen bg-slate-50 px-4 py-16">
+    <div className="mx-auto max-w-2xl rounded-2xl border border-red-200 bg-white p-8 shadow-sm">
+      <h1 className="text-2xl font-bold text-slate-900">MollaVision configuration error</h1>
+      <p className="mt-2 text-slate-600">
+        The production bundle loaded, but required environment variables are missing or invalid:
+      </p>
+      <ul className="mt-4 list-disc space-y-2 pl-6 text-sm text-red-700">
+        {errors.map((error) => <li key={error}>{error}</li>)}
+      </ul>
+      <p className="mt-6 text-sm text-slate-600">
+        Update your Vercel project environment variables and redeploy.
+      </p>
+    </div>
+  </div>
+)
+
+if (runtimeConfigErrors.length) {
+  console.error('Runtime configuration validation failed:', runtimeConfigErrors)
+}
+
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <ClerkProvider publishableKey={clerkPublishableKey} appearance={clerkAppearance} localization={clerkLocalization}>
-      <AuthProvider>
-        <App />
-      </AuthProvider>
-    </ClerkProvider>
+    {runtimeConfigErrors.length ? (
+      <RuntimeConfigurationError errors={runtimeConfigErrors} />
+    ) : (
+      <ClerkProvider publishableKey={clerkPublishableKey} appearance={clerkAppearance} localization={clerkLocalization}>
+        <AuthProvider>
+          <App />
+        </AuthProvider>
+      </ClerkProvider>
+    )}
   </React.StrictMode>,
 )

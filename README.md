@@ -92,7 +92,15 @@ The frontend runs at `http://localhost:3000`; the API runs at `http://localhost:
 
 ## Environment variables
 
-The backend reads `MONGODB_URI`, `JWT_SECRET`, `PORT`, `CLIENT_URL`, and `NODE_ENV`. The frontend reads `VITE_API_URL` when it is set; otherwise it uses `http://localhost:5000/api` for local development. Storage variable names are included in `.env.example` for the upcoming cloud upload adapter.
+The backend reads `MONGODB_URI`, `JWT_SECRET`, `CLERK_SECRET_KEY`, `PORT`, `CLIENT_URL`, `CLIENT_URLS` (optional comma-separated list), and `NODE_ENV`.
+
+The frontend reads:
+- `VITE_CLERK_PUBLISHABLE_KEY` (required)
+- `VITE_API_URL` (required in production, for example `https://your-api-domain.com/api`)
+
+For local development, the frontend still falls back to `http://localhost:5000/api` only when `npm run dev` is used.
+
+Storage variable names are included in `.env.example` for the upcoming cloud upload adapter.
 
 ## Migrating the existing catalog
 
@@ -106,8 +114,16 @@ The migration upserts courses by their existing stable ids and lessons by course
 
 ## Deployment
 
-- **Vercel:** build with `npm run build`; set `VITE_API_URL` to the deployed API base URL.
-- **Render/Railway:** start with `npm run server`; set `MONGODB_URI`, `JWT_SECRET`, `PORT`, `CLIENT_URL`, and `NODE_ENV=production`.
+- **Vercel (frontend):**
+  - Build command: `npm run build`
+  - Output directory: `dist`
+  - Environment variables:
+    - `VITE_CLERK_PUBLISHABLE_KEY` (must be a production Clerk key, `pk_live_...`)
+    - `VITE_API_URL` (must point to the deployed backend API, not localhost)
+  - `vercel.json` includes an SPA rewrite to `index.html` so React Router routes work on refresh/direct access.
+- **Render/Railway (backend):** start with `npm run server`; set `MONGODB_URI`, `JWT_SECRET`, `CLERK_SECRET_KEY`, `PORT`, and `NODE_ENV=production`, plus either:
+  - `CLIENT_URL` for a single frontend origin, or
+  - `CLIENT_URLS` for multiple origins (comma-separated, e.g. `https://yourapp.vercel.app,https://www.yourapp.com`).
 - **MongoDB Atlas:** create a database user with the minimum required permissions and add the Atlas connection string only to the backend environment.
 - **Storage:** configure the selected video/object-storage provider only on the backend. Private resource URLs must be issued by authorized API routes, never by frontend environment variables.
 

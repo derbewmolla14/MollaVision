@@ -103,8 +103,11 @@ Clerk uses the supported default JavaScript loader through `ClerkProvider`. Do n
 that domain has been explicitly configured and verified in the intended Clerk instance.
 The publishable key encodes the Clerk instance hostname; a production key for an
 unrelated Vercel hostname will make Clerk try to load its JavaScript from that host.
+The committed `.env.example` intentionally leaves the publishable key blank. Copy the
+key from the intended Clerk instance into your local ignored `.env` or Vercel's
+Production environment variables; never commit it.
 
-For local development, the frontend still falls back to `http://localhost:5000/api` only when `npm run dev` is used.
+For local development, Vite proxies `/api` requests to `http://localhost:5000`.
 
 Storage variable names are included in `.env.example` for the upcoming cloud upload adapter.
 

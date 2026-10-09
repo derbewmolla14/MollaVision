@@ -1,18 +1,23 @@
 import axios from 'axios';
 
 let authTokenProvider = null;
+const configuredApiUrl = import.meta.env.VITE_API_URL?.trim();
 
 export const setAuthTokenProvider = (provider) => {
   authTokenProvider = provider;
 };
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL?.trim() || (import.meta.env.DEV ? 'http://localhost:5000/api' : '/api'),
+  baseURL: configuredApiUrl || '/api',
   withCredentials: true,
   headers: { 'Content-Type': 'application/json' },
 });
 
 api.interceptors.request.use(async (config) => {
+  if (!configuredApiUrl && import.meta.env.PROD) {
+    throw new Error('VITE_API_URL is required for production API requests.');
+  }
+
   if (authTokenProvider) {
     const token = await authTokenProvider();
     if (token) config.headers.Authorization = `Bearer ${token}`;

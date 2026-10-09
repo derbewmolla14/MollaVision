@@ -25,7 +25,7 @@ const allowedOrigins = [...new Set([
   ...configuredOrigins,
   'http://localhost:5173',
   'http://localhost:3000',
-])];
+])].map((origin) => origin.replace(/\/+$/, ''));
 app.use(cors({
   origin: (origin, callback) => callback(null, !origin || allowedOrigins.includes(origin)),
   credentials: true,

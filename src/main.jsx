@@ -25,10 +25,16 @@ const getClerkInstanceHost = (publishableKey) => {
 }
 
 const clerkInstanceHost = getClerkInstanceHost(clerkPublishableKey)
+const clerkKeyFormatValid = Boolean(
+  clerkPublishableKey
+  && /^pk_(?:test|live)_[A-Za-z0-9_-]+$/.test(clerkPublishableKey)
+  && clerkInstanceHost
+)
+const apiUrlValid = configuredApiUrl === expectedProductionApiUrl
 
 if (!clerkPublishableKey) {
   runtimeConfigErrors.push('VITE_CLERK_PUBLISHABLE_KEY is required.')
-} else if (!/^pk_(?:test|live)_[A-Za-z0-9_-]+$/.test(clerkPublishableKey) || !clerkInstanceHost) {
+} else if (!clerkKeyFormatValid) {
   runtimeConfigErrors.push('VITE_CLERK_PUBLISHABLE_KEY is not a valid Clerk publishable key.')
 }
 
@@ -36,7 +42,7 @@ if (import.meta.env.PROD && clerkPublishableKey?.includes('_test_')) {
   runtimeConfigErrors.push('A production Clerk publishable key is required in production (use pk_live_...).')
 }
 
-if (import.meta.env.PROD && configuredApiUrl !== expectedProductionApiUrl) {
+if (import.meta.env.PROD && !apiUrlValid) {
   runtimeConfigErrors.push(`VITE_API_URL must be ${expectedProductionApiUrl} in production.`)
 }
 
@@ -111,7 +117,17 @@ const RuntimeConfigurationError = ({ errors }) => (
 )
 
 if (runtimeConfigErrors.length) {
-  console.error('Runtime configuration validation failed:', runtimeConfigErrors)
+  console.error('Runtime configuration validation failed:', {
+    VITE_CLERK_PUBLISHABLE_KEY: {
+      present: Boolean(clerkPublishableKey),
+      valid: clerkKeyFormatValid,
+    },
+    VITE_API_URL: {
+      present: Boolean(configuredApiUrl),
+      valid: apiUrlValid,
+    },
+    errors: runtimeConfigErrors,
+  })
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(

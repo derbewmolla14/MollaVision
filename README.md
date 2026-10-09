@@ -96,7 +96,13 @@ The backend reads `MONGODB_URI`, `JWT_SECRET`, `CLERK_SECRET_KEY`, `PORT`, `CLIE
 
 The frontend reads:
 - `VITE_CLERK_PUBLISHABLE_KEY` (required)
-- `VITE_API_URL` (required in production, for example `https://your-api-domain.com/api`)
+- `VITE_API_URL` (required in production; use `https://mollavision-production.up.railway.app/api`)
+
+Clerk uses the supported default JavaScript loader through `ClerkProvider`. Do not set
+`VITE_CLERK_JS_URL`, `CLERK_JS_URL`, a Clerk proxy URL, or a custom Clerk domain unless
+that domain has been explicitly configured and verified in the intended Clerk instance.
+The publishable key encodes the Clerk instance hostname; a production key for an
+unrelated Vercel hostname will make Clerk try to load its JavaScript from that host.
 
 For local development, the frontend still falls back to `http://localhost:5000/api` only when `npm run dev` is used.
 
@@ -118,8 +124,15 @@ The migration upserts courses by their existing stable ids and lessons by course
   - Build command: `npm run build`
   - Output directory: `dist`
   - Environment variables:
-    - `VITE_CLERK_PUBLISHABLE_KEY` (must be a production Clerk key, `pk_live_...`)
-    - `VITE_API_URL` (must point to the deployed backend API, not localhost)
+    - `VITE_CLERK_PUBLISHABLE_KEY`: copy the **Live** instance's publishable key from
+      Clerk Dashboard > API Keys. It must be `pk_live_...` and decode to the intended
+      `*.clerk.accounts.dev` instance. Remove any `VITE_CLERK_JS_URL` variable.
+    - `VITE_API_URL=https://mollavision-production.up.railway.app/api`
+    - Apply the variables to **Production** and redeploy after changing them. Vite embeds
+      `VITE_*` values at build time.
+  - Clerk Dashboard > Domains: remove or disable any unverified custom domain/proxy
+    configuration for this instance. Keep the default Clerk domain unless a custom
+    domain is intentionally configured and verified.
   - `vercel.json` includes an SPA rewrite to `index.html` so React Router routes work on refresh/direct access.
 - **Render/Railway (backend):** start with `npm run server`; set `MONGODB_URI`, `JWT_SECRET`, `CLERK_SECRET_KEY`, `PORT`, and `NODE_ENV=production`, plus either:
   - `CLIENT_URL` for a single frontend origin, or

@@ -8,17 +8,48 @@ import { ClerkProvider } from '@clerk/react'
 const clerkPublishableKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
 const configuredApiUrl = import.meta.env.VITE_API_URL?.trim()
 const runtimeConfigErrors = []
+const expectedProductionApiUrl = 'https://mollavision-production.up.railway.app/api'
+
+const getClerkInstanceHost = (publishableKey) => {
+  const encodedInstance = publishableKey?.match(/^pk_(?:test|live)_([A-Za-z0-9_-]+)$/)?.[1]
+  if (!encodedInstance) return null
+
+  try {
+    const base64 = encodedInstance.replace(/-/g, '+').replace(/_/g, '/')
+    const paddedBase64 = base64.padEnd(Math.ceil(base64.length / 4) * 4, '=')
+    const decodedInstance = atob(paddedBase64).replace(/\$$/, '')
+    return decodedInstance.includes('.') ? decodedInstance : null
+  } catch {
+    return null
+  }
+}
+
+const clerkInstanceHost = getClerkInstanceHost(clerkPublishableKey)
 
 if (!clerkPublishableKey) {
   runtimeConfigErrors.push('VITE_CLERK_PUBLISHABLE_KEY is required.')
+} else if (!/^pk_(?:test|live)_[A-Za-z0-9_-]+$/.test(clerkPublishableKey) || !clerkInstanceHost) {
+  runtimeConfigErrors.push('VITE_CLERK_PUBLISHABLE_KEY is not a valid Clerk publishable key.')
 }
 
 if (import.meta.env.PROD && clerkPublishableKey?.includes('_test_')) {
   runtimeConfigErrors.push('A production Clerk publishable key is required in production (use pk_live_...).')
 }
 
-if (import.meta.env.PROD && (!configuredApiUrl || /^https?:\/\/localhost(?::\d+)?/i.test(configuredApiUrl))) {
-  runtimeConfigErrors.push('VITE_API_URL must point to your deployed backend API in production (not localhost).')
+if (import.meta.env.PROD && configuredApiUrl !== expectedProductionApiUrl) {
+  runtimeConfigErrors.push(`VITE_API_URL must be ${expectedProductionApiUrl} in production.`)
+}
+
+if (import.meta.env.PROD && clerkInstanceHost?.endsWith('.vercel.app')) {
+  runtimeConfigErrors.push(
+    'The production Clerk key points to a Vercel hostname. Use the publishable key for the intended *.clerk.accounts.dev instance unless a verified custom Clerk domain is required.'
+  )
+}
+
+if (import.meta.env.VITE_CLERK_JS_URL) {
+  runtimeConfigErrors.push(
+    'Remove VITE_CLERK_JS_URL from Vercel. Clerk JS must use its supported default loader unless a verified Clerk proxy is intentionally configured.'
+  )
 }
 
 const clerkAppearance = {

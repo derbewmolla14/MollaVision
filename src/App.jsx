@@ -44,8 +44,8 @@ function App() {
             <Route path="/admin/settings" element={<ProtectedRoute role="admin"><AdminSettings /></ProtectedRoute>} />
             <Route path="/admin/submissions" element={<ProtectedRoute role="admin"><AdminSubmissions /></ProtectedRoute>} />
             <Route path="/certificates" element={<ProtectedRoute><Certificates /></ProtectedRoute>} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
+            <Route path="/login/*" element={<Login />} />
+            <Route path="/register/*" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password/:token" element={<ResetPassword />} />
             <Route path="/tutorials" element={<Courses />} />

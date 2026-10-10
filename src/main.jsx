@@ -8,27 +8,43 @@ import { ClerkProvider } from '@clerk/react'
 const clerkPublishableKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
 const configuredApiUrl = import.meta.env.VITE_API_URL?.trim()
 const runtimeConfigErrors = []
-const expectedProductionApiUrl = 'https://mollavision-production.up.railway.app/api'
+const expectedProductionApiUrl =
+  'https://mollavision-production.up.railway.app/api'
 
 const getClerkInstanceHost = (publishableKey) => {
-  const encodedInstance = publishableKey?.match(/^pk_(?:test|live)_([A-Za-z0-9_-]+)$/)?.[1]
-  if (!encodedInstance) return null
+  const match = publishableKey?.match(
+    /^pk_(?:test|live)_([A-Za-z0-9_-]+)$/
+  )
+
+  if (!match) return null
 
   try {
-    const base64 = encodedInstance.replace(/-/g, '+').replace(/_/g, '/')
-    const paddedBase64 = base64.padEnd(Math.ceil(base64.length / 4) * 4, '=')
+    const encodedInstance = match[1]
+    const base64 = encodedInstance
+      .replace(/-/g, '+')
+      .replace(/_/g, '/')
+
+    const paddedBase64 = base64.padEnd(
+      Math.ceil(base64.length / 4) * 4,
+      '='
+    )
+
     const decodedInstance = atob(paddedBase64).replace(/\$$/, '')
-    return decodedInstance.includes('.') ? decodedInstance : null
+
+    return decodedInstance.includes('.')
+      ? decodedInstance
+      : null
   } catch {
     return null
   }
 }
 
 const clerkInstanceHost = getClerkInstanceHost(clerkPublishableKey)
+
 const clerkKeyFormatValid = Boolean(
-  clerkPublishableKey
-  && /^pk_(?:test|live)_[A-Za-z0-9_-]+$/.test(clerkPublishableKey)
-  && clerkInstanceHost
+  clerkPublishableKey &&
+  /^pk_(?:test|live)_[A-Za-z0-9_-]+$/.test(clerkPublishableKey) &&
+  clerkInstanceHost
 )
 const apiUrlValid = configuredApiUrl === expectedProductionApiUrl
 

@@ -95,7 +95,7 @@ The frontend runs at `http://localhost:3000`; the API runs at `http://localhost:
 The backend reads `MONGODB_URI`, `JWT_SECRET`, `CLERK_SECRET_KEY`, `PORT`, `CLIENT_URL`, `CLIENT_URLS` (optional comma-separated list), and `NODE_ENV`. Local MongoDB URIs are rejected unless `ALLOW_LOCAL_MONGODB=true` is explicitly set in development.
 
 The frontend reads:
-- `VITE_CLERK_PUBLISHABLE_KEY` (required)
+- `VITE_CLERK_PUBLISHABLE_KEY` (recommended; `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` is also supported for existing Vercel deployments)
 - `VITE_API_URL` (required in production; use `https://mollavision-production.up.railway.app/api`)
 
 Clerk uses the supported default JavaScript loader through `ClerkProvider`. Do not set
@@ -112,6 +112,22 @@ For local development, Vite proxies `/api` requests to `http://localhost:5000`.
 Storage variable names are included in `.env.example` for the upcoming cloud upload adapter.
 
 ## Migrating the existing catalog
+
+## Managing courses and YouTube lessons
+
+Administrators can manage courses and lessons at `/admin/courses`. Course and lesson
+changes are stored in MongoDB; no React source changes are required. Lesson URLs must
+be standard YouTube watch, `youtu.be`, or embed URLs. The server stores the extracted
+video ID and the frontend embeds it using the official YouTube embed URL.
+
+To seed the supplied HTML course and its 17 lessons:
+
+```bash
+npm run seed:html-course
+```
+
+The seed is rerunnable and preserves the two supplied records that use the same
+YouTube video ID. Playlist index 7 was not supplied, so no lesson is created for it.
 
 The current static catalog is not deleted or replaced. After configuring MongoDB, run:
 
@@ -160,7 +176,9 @@ This creates an optimized production build in the `dist` folder.
 - `/projects` - Projects gallery
 - `/dashboard` - Student dashboard
 - `/certificates` - Certificates
-- `/login` - Login page
+- `/` - Clerk Sign In for signed-out visitors; the MollaVision homepage for signed-in users
+- `/login` - Clerk Sign In page
+- `/signup` - Clerk Sign Up page
 
 ## Next implementation phase
 

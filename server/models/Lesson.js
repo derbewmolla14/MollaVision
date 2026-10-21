@@ -21,6 +21,7 @@ const lessonSchema = new mongoose.Schema(
     module: { type: String, default: 'General' },
     order: { type: Number, required: true, min: 1 },
     videoUrl: { type: String, default: '' },
+    videoId: { type: String, default: '' },
     videoProvider: { type: String, default: '' },
     videoPublicId: { type: String, default: '' },
     pdfUrl: { type: String, default: '' },

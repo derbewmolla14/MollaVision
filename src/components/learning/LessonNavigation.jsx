@@ -2,9 +2,13 @@ import { Link } from 'react-router-dom';
 import { FiArrowLeft, FiArrowRight } from 'react-icons/fi';
 import { getNextLesson, getPreviousLesson } from '../../data/lessons';
 
-const LessonNavigation = ({ courseId, currentOrder }) => {
-  const prevLesson = getPreviousLesson(courseId, currentOrder);
-  const nextLesson = getNextLesson(courseId, currentOrder);
+const LessonNavigation = ({ courseId, currentOrder, lessons }) => {
+  const prevLesson = lessons?.length
+    ? [...lessons].sort((a, b) => a.order - b.order).find((lesson) => lesson.order === currentOrder - 1)
+    : getPreviousLesson(courseId, currentOrder);
+  const nextLesson = lessons?.length
+    ? [...lessons].sort((a, b) => a.order - b.order).find((lesson) => lesson.order === currentOrder + 1)
+    : getNextLesson(courseId, currentOrder);
 
   return (
     <div className="mt-12 pt-8 border-t border-gray-200">
@@ -12,7 +16,7 @@ const LessonNavigation = ({ courseId, currentOrder }) => {
         {/* Previous Button */}
         {prevLesson ? (
           <Link
-            to={`/courses/${courseId}/${prevLesson.id}`}
+            to={`/courses/${courseId}/${prevLesson.id || prevLesson._id}`}
             className="flex items-center gap-2 px-6 py-3 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors font-medium"
           >
             <FiArrowLeft size={18} />
@@ -28,7 +32,7 @@ const LessonNavigation = ({ courseId, currentOrder }) => {
         {/* Next Button */}
         {nextLesson ? (
           <Link
-            to={`/courses/${courseId}/${nextLesson.id}`}
+            to={`/courses/${courseId}/${nextLesson.id || nextLesson._id}`}
             className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
           >
             Next Lesson

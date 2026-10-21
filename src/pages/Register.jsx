@@ -26,7 +26,7 @@ const Register = () => {
         </div>
         <SignUp
           routing="path"
-          path="/register"
+          path="/signup"
           signInUrl={signInUrl}
           fallbackRedirectUrl={from}
           localization={{ formButtonPrimary: 'Sign Up' }}

@@ -9,7 +9,7 @@ const Login = () => {
   const { isAuthenticated, loading } = useAuth();
   const redirectFromQuery = new URLSearchParams(location.search).get('redirect_url');
   const from = location.state?.from || redirectFromQuery || '/dashboard';
-  const signUpUrl = `/register?redirect_url=${encodeURIComponent(from)}`;
+  const signUpUrl = `/signup?redirect_url=${encodeURIComponent(from)}`;
 
   useEffect(() => {
     if (!loading && isAuthenticated) navigate(from, { replace: true });

@@ -10,7 +10,7 @@ export const lessons = [
       {
         type: "heading",
         level: 1,
-        text: "HTML Introduction"
+        text: "Introduction to HTML"
       },
       {
         type: "text",

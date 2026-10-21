@@ -1,19 +1,36 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { FiFilter } from 'react-icons/fi';
 import CourseCard from '../components/course/CourseCard';
 import { courses } from '../data/courses';
+import { courseAPI } from '../services/api';
 
 const Courses = () => {
+  const [catalog, setCatalog] = useState(courses);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedLevel, setSelectedLevel] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
 
+  useEffect(() => {
+    courseAPI.list()
+      .then(({ data }) => {
+        if (data.courses?.length) {
+          setCatalog(data.courses.map((course) => ({
+            ...course,
+            id: course.slug,
+            lessons: course.totalLessons ?? course.lessons?.length ?? 0,
+            icon: course.icon || '📚',
+          })));
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   // Get unique categories and levels
-  const categories = ['all', ...new Set(courses.map(c => c.category))];
-  const levels = ['all', ...new Set(courses.map(c => c.level))];
+  const categories = ['all', ...new Set(catalog.map(c => c.category))];
+  const levels = ['all', ...new Set(catalog.map(c => c.level))];
 
   // Filter courses
-  const filteredCourses = courses.filter(course => {
+  const filteredCourses = catalog.filter(course => {
     const categoryMatch = selectedCategory === 'all' || course.category === selectedCategory;
     const levelMatch = selectedLevel === 'all' || course.level === selectedLevel;
     const searchMatch = 
@@ -36,7 +53,7 @@ const Courses = () => {
             Explore Courses
           </h1>
           <p className="text-xl text-gray-600">
-            Choose from {courses.length} courses and start learning today
+            Choose from {catalog.length} courses and start learning today
           </p>
         </div>
       </section>

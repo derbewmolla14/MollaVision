@@ -5,7 +5,9 @@ import './index.css'
 import { AuthProvider } from './context/AuthContext.jsx'
 import { ClerkProvider } from '@clerk/react'
 
-const clerkPublishableKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
+const clerkPublishableKey =
+  import.meta.env.VITE_CLERK_PUBLISHABLE_KEY ||
+  import.meta.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
 const configuredApiUrl = import.meta.env.VITE_API_URL?.trim()
 const runtimeConfigErrors = []
 const expectedProductionApiUrl =
@@ -49,9 +51,13 @@ const clerkKeyFormatValid = Boolean(
 const apiUrlValid = configuredApiUrl === expectedProductionApiUrl
 
 if (!clerkPublishableKey) {
-  runtimeConfigErrors.push('VITE_CLERK_PUBLISHABLE_KEY is required.')
+  runtimeConfigErrors.push(
+    'VITE_CLERK_PUBLISHABLE_KEY is required (NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY is also supported for existing Vercel deployments).'
+  )
 } else if (!clerkKeyFormatValid) {
-  runtimeConfigErrors.push('VITE_CLERK_PUBLISHABLE_KEY is not a valid Clerk publishable key.')
+  runtimeConfigErrors.push(
+    'The Clerk publishable key is not valid. Use the Publishable Key from Clerk Dashboard.'
+  )
 }
 
 if (import.meta.env.PROD && clerkPublishableKey?.includes('_test_')) {
@@ -62,9 +68,9 @@ if (import.meta.env.PROD && !apiUrlValid) {
   runtimeConfigErrors.push(`VITE_API_URL must be ${expectedProductionApiUrl} in production.`)
 }
 
-if (import.meta.env.PROD && clerkInstanceHost?.endsWith('.vercel.app')) {
+if (clerkInstanceHost?.endsWith('.vercel.app')) {
   runtimeConfigErrors.push(
-    'The production Clerk key points to a Vercel hostname. Use the publishable key for the intended *.clerk.accounts.dev instance unless a verified custom Clerk domain is required.'
+    'The Clerk key points to a Vercel hostname that is not serving Clerk JS. Replace it with the publishable key for the intended *.clerk.accounts.dev instance, unless a verified custom Clerk domain is intentionally configured.'
   )
 }
 
@@ -120,13 +126,27 @@ const RuntimeConfigurationError = ({ errors }) => (
     <div className="mx-auto max-w-2xl rounded-2xl border border-red-200 bg-white p-8 shadow-sm">
       <h1 className="text-2xl font-bold text-slate-900">MollaVision configuration error</h1>
       <p className="mt-2 text-slate-600">
-        The production bundle loaded, but required environment variables are missing or invalid:
+        Clerk could not start because the frontend environment configuration is missing or invalid:
       </p>
       <ul className="mt-4 list-disc space-y-2 pl-6 text-sm text-red-700">
         {errors.map((error) => <li key={error}>{error}</li>)}
       </ul>
-      <p className="mt-6 text-sm text-slate-600">
-        Update your Vercel project environment variables and redeploy.
+      <div className="mt-6 rounded-xl bg-slate-50 p-4 text-sm text-slate-600">
+        <p className="font-semibold text-slate-900">For the Vercel deployment</p>
+        <ol className="mt-2 list-decimal space-y-1 pl-5">
+          <li>Open Vercel Project Settings, then Environment Variables.</li>
+          <li>Add <code className="rounded bg-white px-1 py-0.5">VITE_CLERK_PUBLISHABLE_KEY</code> using the Publishable Key from Clerk Dashboard.</li>
+          <li>Enable it for the environment being deployed, then redeploy. Vite reads this value during the build.</li>
+        </ol>
+      </div>
+      <div className="mt-4 rounded-xl border border-slate-200 p-4 text-sm text-slate-600">
+        <p className="font-semibold text-slate-900">For local development</p>
+        <p className="mt-1">
+          Add the same publishable key to the root <code className="rounded bg-slate-50 px-1 py-0.5">.env</code> file, restart Vite, and open <code className="rounded bg-slate-50 px-1 py-0.5">http://localhost:3000</code>.
+        </p>
+      </div>
+      <p className="mt-6 text-xs text-slate-500">
+        Only use a <code className="rounded bg-slate-50 px-1 py-0.5">pk_test_...</code> or <code className="rounded bg-slate-50 px-1 py-0.5">pk_live_...</code> publishable key here. Never add <code className="rounded bg-slate-50 px-1 py-0.5">CLERK_SECRET_KEY</code> to frontend variables.
       </p>
     </div>
   </div>

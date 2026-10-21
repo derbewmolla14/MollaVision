@@ -9,6 +9,7 @@
     "server:dev": "node --watch-path=server server/server.js",
     "migrate:courses": "node server/scripts/migrateStaticData.js",
     "seed:admin": "node server/scripts/seedAdmin.js",
+    "seed:html-course": "node server/scripts/seedHtmlCourse.js",
     "build": "vite build",
     "preview": "vite preview"
   },

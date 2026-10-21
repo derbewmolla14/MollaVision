@@ -10,6 +10,7 @@ import useProgress from '../hooks/useProgress';
 import { getLessonById, getLessonsByOrder } from '../data/lessons';
 import { getCourseById } from '../data/courses';
 import { getExerciseById } from '../data/exercises';
+import { courseAPI, lessonAPI } from '../services/api';
 
 const Lesson = () => {
   const { courseId, lessonId } = useParams();
@@ -20,34 +21,37 @@ const Lesson = () => {
   const [course, setCourse] = useState(null);
   const [exercise, setExercise] = useState(null);
   const [lessonCompleted, setLessonCompleted] = useState(false);
+  const [courseLessons, setCourseLessons] = useState([]);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    // Get lesson and course data
-    const lessonData = getLessonById(courseId, lessonId);
-    const courseData = getCourseById(courseId);
-
-    if (!lessonData || !courseData) {
-      navigate('/courses');
-      return;
-    }
-
-    setLesson(lessonData);
-    setCourse(courseData);
-    setLessonCompleted(isComplete(courseId, lessonId));
-
-    // Get exercise if it exists
-    if (lessonData.exercise) {
-      const exerciseData = getExerciseById(lessonData.exercise);
-      if (exerciseData) {
-        setExercise(exerciseData);
+    let active = true;
+    const loadLesson = async () => {
+      try {
+        const [{ data: courseData }, { data: lessonResponse }, { data: lessonList }] = await Promise.all([courseAPI.get(courseId), lessonAPI.get(lessonId), lessonAPI.list(courseId)]);
+        if (!active) return;
+        setCourse({ ...courseData.course, id: courseData.course.slug });
+        setLesson({ ...lessonResponse.lesson, id: lessonResponse.lesson._id });
+        setCourseLessons(lessonList.lessons);
+      } catch {
+        const lessonData = getLessonById(courseId, lessonId);
+        const courseData = getCourseById(courseId);
+        if (!lessonData || !courseData) {
+          navigate('/courses');
+          return;
+        }
+        if (active) {
+          setLesson(lessonData);
+          setCourse(courseData);
+          setError('Showing the saved lesson while the API is unavailable.');
+        }
       }
-    }
-
-    // Close sidebar on desktop
+    };
+    loadLesson().catch(() => setError('Unable to load this lesson.'));
+    setLessonCompleted(isComplete(courseId, lessonId));
     setSidebarOpen(false);
-
-    // Scroll to top
     window.scrollTo(0, 0);
+    return () => { active = false; };
   }, [courseId, lessonId, navigate, isComplete]);
 
   const handleMarkComplete = () => {
@@ -69,6 +73,8 @@ const Lesson = () => {
       </div>
     );
   }
+
+  const videoId = lesson.videoId || lesson.videoUrl?.match(/(?:v=|youtu\.be\/|embed\/)([A-Za-z0-9_-]{11})/)?.[1];
 
   return (
     <div className="min-h-screen bg-white">
@@ -119,8 +125,25 @@ const Lesson = () => {
             </div>
 
             {/* Lesson Content */}
+            {error && <p className="mb-6 rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-800">{error}</p>}
+            {videoId && (
+              <div className="mb-8 overflow-hidden rounded-xl bg-slate-900 shadow-lg">
+                <div className="aspect-video">
+                  <iframe
+                    title={lesson.title}
+                    src={`https://www.youtube.com/embed/${videoId}`}
+                    className="h-full w-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                </div>
+                <a href={lesson.videoUrl} target="_blank" rel="noreferrer" className="block px-4 py-3 text-sm text-white hover:text-blue-200">
+                  Open this lesson on YouTube
+                </a>
+              </div>
+            )}
             <div className="mb-12">
-              <LessonContent content={lesson.content} />
+              {lesson.content?.length ? <LessonContent content={lesson.content} /> : <p className="text-gray-600">{lesson.description || 'Video lesson.'}</p>}
             </div>
 
             {/* Exercise */}
@@ -147,7 +170,7 @@ const Lesson = () => {
             )}
 
             {/* Lesson Navigation */}
-            <LessonNavigation courseId={courseId} currentOrder={lesson.order} />
+            <LessonNavigation courseId={courseId} currentOrder={lesson.order} lessons={courseLessons} />
           </div>
         </div>
       </div>

@@ -60,7 +60,8 @@ const startServer = async () => {
       console.log(`MollaVision API running on http://localhost:${port}`);
     });
   } catch (error) {
-    console.error('MongoDB connection failed:', error);
+    const message = error instanceof Error ? error.message : 'Unknown database connection error';
+    console.error(`MongoDB connection failed: ${message}`);
     process.exitCode = 1;
   }
 };

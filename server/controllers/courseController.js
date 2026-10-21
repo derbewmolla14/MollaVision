@@ -3,6 +3,8 @@ import Lesson from '../models/Lesson.js';
 import Chapter from '../models/Chapter.js';
 
 const makeSlug = (title) => title.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+const writableFields = ['title', 'description', 'shortDescription', 'category', 'level', 'language', 'instructor', 'thumbnail', 'price', 'isPremium', 'isPublished'];
+const pickFields = (source, fields) => Object.fromEntries(fields.filter((field) => source[field] !== undefined).map((field) => [field, source[field]]));
 
 export const listCourses = async (req, res, next) => {
   try {
@@ -64,18 +66,20 @@ export const createCourse = async (req, res, next) => {
     });
     res.status(201).json({ course });
   } catch (error) {
+    if (error.code === 11000) return res.status(409).json({ message: 'A course with this title or slug already exists.' });
     next(error);
   }
 };
 
 export const updateCourse = async (req, res, next) => {
   try {
-    const updates = { ...req.body };
+    const updates = pickFields(req.body, writableFields);
     if (updates.title) updates.slug = makeSlug(updates.title);
     const course = await Course.findByIdAndUpdate(req.params.courseId, updates, { new: true, runValidators: true });
     if (!course) return res.status(404).json({ message: 'Course not found' });
     res.json({ course });
   } catch (error) {
+    if (error.code === 11000) return res.status(409).json({ message: 'A course with this title or slug already exists.' });
     next(error);
   }
 };

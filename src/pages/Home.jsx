@@ -1,14 +1,39 @@
 import { Link } from 'react-router-dom';
 import { FiSearch, FiTrendingUp, FiAward, FiUsers } from 'react-icons/fi';
+import { SignIn } from '@clerk/react';
 import Button from '../components/common/Button';
 import Card from '../components/common/Card';
 import CourseCard from '../components/course/CourseCard';
 import { courses, getCoursesByCategory } from '../data/courses';
+import { useAuth } from '../context/AuthContext';
 
 const Home = () => {
+  const { isAuthenticated, loading } = useAuth();
   const programmingCourses = getCoursesByCategory('programming').slice(0, 3);
   const frontendCourses = getCoursesByCategory('frontend').slice(0, 3);
   const featuredCourses = courses.slice(0, 6);
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center text-slate-600">
+        Loading authentication...
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-12">
+        <div className="w-full max-w-md">
+          <SignIn
+            routing="hash"
+            fallbackRedirectUrl="/"
+            signUpUrl="/signup"
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
@@ -25,7 +50,7 @@ const Home = () => {
               Master programming, web development, and modern technology with practical lessons, examples, and projects.
             </p>
             <div className="flex gap-4 flex-wrap">
-              <Link to="/courses">
+              <Link to={isAuthenticated ? '/courses' : '/login?redirect_url=%2Fcourses'}>
                 <Button variant="primary" className="text-lg">
                   Start Learning
                 </Button>
